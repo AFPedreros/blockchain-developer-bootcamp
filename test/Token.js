@@ -8,12 +8,17 @@ const tokens = (n) => {
 
 describe("Token", () => {
 
-	let token;
+	let token,
+		accounts,
+		deployer
 
 	beforeEach(async () => {
 		//Fetch Token from blockchain
 		const Token = await ethers.getContractFactory("Token")
 		token = await Token.deploy("My Token", "EMR", "1000000")
+
+		accounts = await ethers.getSigners()
+		deployer = accounts[0]
 	})
 
 	describe("Deployment", () =>{
@@ -38,10 +43,16 @@ describe("Token", () => {
 			expect(await token.decimals()).to.equal(decimals)
 		})
 
-			it("Has correct supply", async () => {
+		it("Has correct supply", async () => {
 			//Check that supply is correct
 			expect(await token.totalSupply()).to.equal(totalSupply)
 		})
+
+		it("Has correct deployer", async () => {
+			//Check that the deployer is correct
+			expect(await token.balanceOf(deployer.address)).to.equal(totalSupply)
+		})
+
 
 	})
 
