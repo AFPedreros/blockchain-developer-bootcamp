@@ -89,4 +89,5 @@ contract Token {
 
 		emit Transfer(_from, _to, _value);
 	}
+	
 }
