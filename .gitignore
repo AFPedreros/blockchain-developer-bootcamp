@@ -1,36 +1,48 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
+/hardhat/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
+# Hardhat files
+/hardhat/cache
+/hardhat/artifacts
+
+# TypeChain files
+/hardhat/typechain
+/hardhat/typechain-types
+
+# Solidity-coverage files
+/hardhat/coverage
+/hardhat/coverage.json
+
+# Testing
 /coverage
 
-# next.js
+# Next.js
 /.next/
 /out/
 
-# production
+# Production
 /build
 
-# misc
+# Misc
 .DS_Store
 *.pem
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# Local env files
+.env
 .env*.local
 
-# vercel
+# Vercel
 .vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
