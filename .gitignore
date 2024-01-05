@@ -1,21 +1,21 @@
 # Dependencies
 /node_modules
-/hardhat/node_modules
+/blockchain/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
 # Hardhat files
-/hardhat/cache
-/hardhat/artifacts
+/blockchain/cache
+/blockchain/artifacts
 
 # TypeChain files
-/hardhat/typechain
-/hardhat/typechain-types
+/blockchain/typechain
+/blockchain/typechain-types
 
 # Solidity-coverage files
-/hardhat/coverage
-/hardhat/coverage.json
+/blockchain/coverage
+/blockchain/coverage.json
 
 # Testing
 /coverage
