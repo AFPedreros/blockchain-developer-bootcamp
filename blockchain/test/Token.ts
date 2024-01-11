@@ -1,3 +1,4 @@
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -9,12 +10,17 @@ const tokens = (n: number) => {
 
 describe("Token", () => {
   let token: Token;
+  let accounts: HardhatEthersSigner[];
+  let deployer: HardhatEthersSigner;
 
   beforeEach(async () => {
     const Token = await ethers.getContractFactory("Token");
 
     token = await Token.deploy("Coffee Token", "COF", 1000000);
     await token.waitForDeployment();
+
+    accounts = await ethers.getSigners();
+    deployer = accounts[0];
   });
 
   describe("Deployment", () => {
@@ -24,27 +30,23 @@ describe("Token", () => {
     const totalSupply = tokens(1000000);
 
     it("Should return the right name", async () => {
-      const name = await token.name();
-
-      expect(name).to.equal(name);
+      expect(await token.name()).to.equal(name);
     });
 
     it("Should return the right symbol", async () => {
-      const symbol = await token.symbol();
-
-      expect(symbol).to.equal(symbol);
+      expect(await token.symbol()).to.equal(symbol);
     });
 
     it("Should return the right decimals", async () => {
-      const decimals = await token.decimals();
-
-      expect(decimals).to.equal(decimals);
+      expect(await token.decimals()).to.equal(decimals);
     });
 
     it("Should return the right total supply", async () => {
-      const totalSupply = await token.totalSupply();
+      expect(await token.totalSupply()).to.equal(totalSupply);
+    });
 
-      expect(totalSupply).to.equal(totalSupply);
+    it("Should assign the total supply to the deployer", async () => {
+      expect(await token.balanceOf(deployer.address)).to.equal(totalSupply);
     });
   });
 });
