@@ -1,5 +1,11 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
+import {
+  BigNumberish,
+  ContractTransactionReceipt,
+  ContractTransactionResponse,
+  EventLog,
+} from "ethers";
 import { ethers } from "hardhat";
 
 import { Token } from "../typechain-types";
@@ -8,10 +14,13 @@ const tokens = (n: number) => {
   return ethers.parseEther(n.toString());
 };
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 describe("Token", () => {
   let token: Token;
   let accounts: HardhatEthersSigner[];
   let deployer: HardhatEthersSigner;
+  let receiver: HardhatEthersSigner;
 
   beforeEach(async () => {
     const Token = await ethers.getContractFactory("Token");
@@ -21,6 +30,7 @@ describe("Token", () => {
 
     accounts = await ethers.getSigners();
     deployer = accounts[0];
+    receiver = accounts[1];
   });
 
   describe("Deployment", () => {
@@ -47,6 +57,57 @@ describe("Token", () => {
 
     it("Should assign the total supply to the deployer", async () => {
       expect(await token.balanceOf(deployer.address)).to.equal(totalSupply);
+    });
+  });
+
+  describe("Transactions", () => {
+    let amount: BigNumberish;
+    let transaction: ContractTransactionResponse;
+    let receipt: ContractTransactionReceipt | null;
+
+    describe("Success", () => {
+      beforeEach(async () => {
+        amount = tokens(100);
+        transaction = await token
+          .connect(deployer)
+          .transfer(receiver.address, tokens(100));
+        receipt = await transaction.wait();
+      });
+
+      it("Should transfer tokens between accounts", async () => {
+        expect(await token.balanceOf(deployer.address)).to.equal(
+          tokens(999900)
+        );
+        expect(await token.balanceOf(receiver.address)).to.equal(amount);
+      });
+
+      it("Should emit a Transfer event", async () => {
+        const events = receipt?.logs[0] as EventLog;
+        const event = events?.fragment;
+
+        expect(event.name).to.equal("Transfer");
+
+        const args = events?.args;
+
+        expect(args.from).to.equal(deployer.address);
+        expect(args.to).to.equal(receiver.address);
+        expect(args.value).to.equal(amount);
+      });
+    });
+
+    describe("Failure", () => {
+      it("Should reject insufficient balances", async () => {
+        const invalidAmount = tokens(100000000);
+        await expect(
+          token.connect(deployer).transfer(receiver.address, invalidAmount)
+        ).to.be.revertedWith("Not enough tokens");
+      });
+
+      it("Should reject invalid recipients", async () => {
+        await expect(
+          token.connect(deployer).transfer(ZERO_ADDRESS, amount)
+        ).to.be.revertedWith("Invalid recipient");
+      });
     });
   });
 });
