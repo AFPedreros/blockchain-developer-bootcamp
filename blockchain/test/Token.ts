@@ -21,6 +21,7 @@ describe("Token", () => {
   let accounts: HardhatEthersSigner[];
   let deployer: HardhatEthersSigner;
   let receiver: HardhatEthersSigner;
+  let exchange: HardhatEthersSigner;
 
   beforeEach(async () => {
     const Token = await ethers.getContractFactory("Token");
@@ -31,6 +32,7 @@ describe("Token", () => {
     accounts = await ethers.getSigners();
     deployer = accounts[0];
     receiver = accounts[1];
+    exchange = accounts[2];
   });
 
   describe("Deployment", () => {
@@ -107,6 +109,49 @@ describe("Token", () => {
         await expect(
           token.connect(deployer).transfer(ZERO_ADDRESS, amount)
         ).to.be.revertedWith("Invalid recipient");
+      });
+    });
+  });
+
+  describe("Approve", () => {
+    let amount: BigNumberish;
+    let transaction: ContractTransactionResponse;
+    let receipt: ContractTransactionReceipt | null;
+
+    beforeEach(async () => {
+      amount = tokens(100);
+      transaction = await token
+        .connect(deployer)
+        .approve(exchange.address, tokens(100));
+      receipt = await transaction.wait();
+    });
+
+    describe("Success", () => {
+      it("Should approve token for delegated transfer", async () => {
+        expect(
+          await token.allowance(deployer.address, exchange.address)
+        ).to.equal(amount);
+      });
+
+      it("Should emit an Approval event", async () => {
+        const events = receipt?.logs[0] as EventLog;
+        const event = events?.fragment;
+
+        expect(event.name).to.equal("Approval");
+
+        const args = events?.args;
+
+        expect(args.owner).to.equal(deployer.address);
+        expect(args.spender).to.equal(exchange.address);
+        expect(args.value).to.equal(amount);
+      });
+    });
+
+    describe("Failure", () => {
+      it("Should reject invalid spender", async () => {
+        await expect(
+          token.connect(deployer).approve(ZERO_ADDRESS, amount)
+        ).to.be.revertedWith("Invalid spender");
       });
     });
   });
