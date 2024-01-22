@@ -155,4 +155,73 @@ describe("Token", () => {
       });
     });
   });
+
+  describe("Delegated transfer", () => {
+    let amount: BigNumberish;
+    let transaction: ContractTransactionResponse;
+    let receipt: ContractTransactionReceipt | null;
+
+    beforeEach(async () => {
+      amount = tokens(100);
+      transaction = await token
+        .connect(deployer)
+        .approve(exchange.address, tokens(100));
+      receipt = await transaction.wait();
+    });
+
+    describe("Success", () => {
+      beforeEach(async () => {
+        transaction = await token
+          .connect(exchange)
+          .transferFrom(deployer.address, receiver.address, amount);
+        receipt = await transaction.wait();
+      });
+
+      it("Should transfer tokens between accounts", async () => {
+        expect(await token.balanceOf(deployer.address)).to.equal(
+          tokens(999900)
+        );
+        expect(await token.balanceOf(receiver.address)).to.equal(amount);
+      });
+
+      it("Should reset allowance", async () => {
+        expect(
+          await token.allowance(deployer.address, exchange.address)
+        ).to.equal(0);
+      });
+
+      it("Should emit a Transfer event", async () => {
+        const events = receipt?.logs[0] as EventLog;
+        const event = events?.fragment;
+
+        expect(event.name).to.equal("Transfer");
+
+        const args = events?.args;
+
+        expect(args.from).to.equal(deployer.address);
+        expect(args.to).to.equal(receiver.address);
+        expect(args.value).to.equal(amount);
+      });
+    });
+
+    describe("Failure", () => {
+      it("Should reject insufficient balances", async () => {
+        const invalidAmount = tokens(100000000);
+        await expect(
+          token
+            .connect(exchange)
+            .transferFrom(deployer.address, receiver.address, invalidAmount)
+        ).to.be.revertedWith("Not enough tokens");
+      });
+
+      it("Should reject insufficient allowance", async () => {
+        const invalidAmount = tokens(1000);
+        await expect(
+          token
+            .connect(exchange)
+            .transferFrom(deployer.address, receiver.address, invalidAmount)
+        ).to.be.revertedWith("Not enough allowance");
+      });
+    });
+  });
 });
