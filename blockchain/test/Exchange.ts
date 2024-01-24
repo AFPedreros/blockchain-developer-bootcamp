@@ -19,6 +19,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 describe("Exchange", () => {
   let exchange: Exchange;
   let token1: Token;
+  let token2: Token;
   let accounts: HardhatEthersSigner[];
   let deployer: HardhatEthersSigner;
   let feeAccount: HardhatEthersSigner;
@@ -40,6 +41,8 @@ describe("Exchange", () => {
     const Token = await ethers.getContractFactory("Token");
 
     token1 = await Token.deploy("Coffee Token", "COF", 1000000);
+    await token1.waitForDeployment();
+    token2 = await Token.deploy("Mock Dai", "MDAI", 1000000);
     await token1.waitForDeployment();
 
     transaction = await token1
@@ -202,6 +205,91 @@ describe("Exchange", () => {
       expect(
         await exchange.balanceOf(token1.getAddress(), user1.address)
       ).to.equal(amount);
+    });
+  });
+
+  describe("Make orders", () => {
+    let amountGet: BigNumberish;
+    let amountGive: BigNumberish;
+    let receipt: ContractTransactionReceipt | null;
+
+    beforeEach(async () => {
+      amountGet = tokens(10);
+      amountGive = tokens(10);
+
+      transaction = await token1
+        .connect(user1)
+        .approve(exchange.getAddress(), amountGive);
+      receipt = await transaction.wait();
+
+      transaction = await exchange
+        .connect(user1)
+        .depositToken(token1.getAddress(), amountGive);
+      receipt = await transaction.wait();
+
+      transaction = await exchange
+        .connect(user1)
+        .makeOrder(
+          token2.getAddress(),
+          amountGet,
+          token1.getAddress(),
+          amountGive
+        );
+      receipt = await transaction.wait();
+    });
+
+    describe("Success", () => {
+      it("Should create an order", async () => {
+        expect(await exchange.orderId()).to.equal(1);
+        const order = await exchange.orders(0);
+        expect(order.id).to.equal(0);
+        expect(order.user).to.equal(user1.address);
+        expect(order.tokenGet).to.equal(await token2.getAddress());
+        expect(order.amountGet).to.equal(amountGet);
+        expect(order.tokenGive).to.equal(await token1.getAddress());
+        expect(order.amountGive).to.equal(amountGive);
+        expect(order.timestamp).to.at.least(1);
+      });
+
+      it("Should emit an Order event", async () => {
+        const events = receipt?.logs[0] as EventLog;
+        const event = events?.fragment;
+
+        expect(event.name).to.equal("Order");
+
+        const args = events?.args;
+
+        expect(args.id).to.equal(0);
+        expect(args.user).to.equal(user1.address);
+        expect(args.tokenGet).to.equal(await token2.getAddress());
+        expect(args.amountGet).to.equal(amountGet);
+        expect(args.tokenGive).to.equal(await token1.getAddress());
+        expect(args.amountGive).to.equal(amountGive);
+        expect(args.timestamp).to.at.least(1);
+      });
+    });
+
+    describe("Failure", () => {
+      it("Should reject invalid tokens", async () => {
+        await expect(
+          exchange
+            .connect(user1)
+            .makeOrder(ZERO_ADDRESS, amountGet, token1.getAddress(), amountGive)
+        ).to.be.revertedWith("TokenGet cannot be 0x0");
+      });
+
+      it("Should reject invalid amounts", async () => {
+        await expect(
+          exchange
+            .connect(user1)
+            .makeOrder(
+              token2.getAddress(),
+              tokens(100),
+              token1.getAddress(),
+              tokens(100)
+            )
+        ).to.be.revertedWith("Not enough tokens");
+      });
     });
   });
 });
