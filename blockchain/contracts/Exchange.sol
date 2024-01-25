@@ -11,10 +11,20 @@ contract Exchange {
   mapping(address => mapping(address => uint256)) public tokens;
   mapping(uint256 => _Order) public orders;
   uint256 public orderId;
+  mapping(uint256 => bool) public orderCancelled;
 
   event Deposit(address token, address user, uint256 amount, uint256 balance);
   event Withdraw(address token, address user, uint256 amount, uint256 balance);
   event Order(
+    uint256 id,
+    address user,
+    address tokenGet,
+    uint256 amountGet,
+    address tokenGive,
+    uint256 amountGive,
+    uint256 timestamp
+  );
+  event Cancel(
     uint256 id,
     address user,
     address tokenGet,
@@ -97,5 +107,24 @@ contract Exchange {
     );
 
     orderId++;
+  }
+
+  function cancelOrder(uint256 _id) public {
+    _Order storage _order = orders[_id];
+
+    require(_order.id == _id, "Invalid order id");
+    require(address(_order.user) == msg.sender, "Unauthorized");
+
+    orderCancelled[_id] = true;
+
+    emit Cancel(
+      _order.id,
+      _order.user,
+      _order.tokenGet,
+      _order.amountGet,
+      _order.tokenGive,
+      _order.amountGive,
+      block.timestamp
+    );
   }
 }

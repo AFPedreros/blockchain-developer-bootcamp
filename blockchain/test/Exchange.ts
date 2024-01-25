@@ -208,7 +208,7 @@ describe("Exchange", () => {
     });
   });
 
-  describe("Make orders", () => {
+  describe("Orders", () => {
     let amountGet: BigNumberish;
     let amountGive: BigNumberish;
     let receipt: ContractTransactionReceipt | null;
@@ -238,57 +238,114 @@ describe("Exchange", () => {
       receipt = await transaction.wait();
     });
 
-    describe("Success", () => {
-      it("Should create an order", async () => {
-        expect(await exchange.orderId()).to.equal(1);
-        const order = await exchange.orders(0);
-        expect(order.id).to.equal(0);
-        expect(order.user).to.equal(user1.address);
-        expect(order.tokenGet).to.equal(await token2.getAddress());
-        expect(order.amountGet).to.equal(amountGet);
-        expect(order.tokenGive).to.equal(await token1.getAddress());
-        expect(order.amountGive).to.equal(amountGive);
-        expect(order.timestamp).to.at.least(1);
+    describe("Make orders", () => {
+      describe("Success", () => {
+        it("Should create an order", async () => {
+          expect(await exchange.orderId()).to.equal(1);
+          const order = await exchange.orders(0);
+          expect(order.id).to.equal(0);
+          expect(order.user).to.equal(user1.address);
+          expect(order.tokenGet).to.equal(await token2.getAddress());
+          expect(order.amountGet).to.equal(amountGet);
+          expect(order.tokenGive).to.equal(await token1.getAddress());
+          expect(order.amountGive).to.equal(amountGive);
+          expect(order.timestamp).to.at.least(1);
+        });
+
+        it("Should emit an Order event", async () => {
+          const events = receipt?.logs[0] as EventLog;
+          const event = events?.fragment;
+
+          expect(event.name).to.equal("Order");
+
+          const args = events?.args;
+
+          expect(args.id).to.equal(0);
+          expect(args.user).to.equal(user1.address);
+          expect(args.tokenGet).to.equal(await token2.getAddress());
+          expect(args.amountGet).to.equal(amountGet);
+          expect(args.tokenGive).to.equal(await token1.getAddress());
+          expect(args.amountGive).to.equal(amountGive);
+          expect(args.timestamp).to.at.least(1);
+        });
       });
 
-      it("Should emit an Order event", async () => {
-        const events = receipt?.logs[0] as EventLog;
-        const event = events?.fragment;
+      describe("Failure", () => {
+        it("Should reject invalid tokens", async () => {
+          await expect(
+            exchange
+              .connect(user1)
+              .makeOrder(
+                ZERO_ADDRESS,
+                amountGet,
+                token1.getAddress(),
+                amountGive
+              )
+          ).to.be.revertedWith("TokenGet cannot be 0x0");
+        });
 
-        expect(event.name).to.equal("Order");
-
-        const args = events?.args;
-
-        expect(args.id).to.equal(0);
-        expect(args.user).to.equal(user1.address);
-        expect(args.tokenGet).to.equal(await token2.getAddress());
-        expect(args.amountGet).to.equal(amountGet);
-        expect(args.tokenGive).to.equal(await token1.getAddress());
-        expect(args.amountGive).to.equal(amountGive);
-        expect(args.timestamp).to.at.least(1);
+        it("Should reject invalid amounts", async () => {
+          await expect(
+            exchange
+              .connect(user1)
+              .makeOrder(
+                token2.getAddress(),
+                tokens(100),
+                token1.getAddress(),
+                tokens(100)
+              )
+          ).to.be.revertedWith("Not enough tokens");
+        });
       });
     });
 
-    describe("Failure", () => {
-      it("Should reject invalid tokens", async () => {
-        await expect(
-          exchange
-            .connect(user1)
-            .makeOrder(ZERO_ADDRESS, amountGet, token1.getAddress(), amountGive)
-        ).to.be.revertedWith("TokenGet cannot be 0x0");
+    describe("Cancel orders", () => {
+      describe("Success", () => {
+        beforeEach(async () => {
+          transaction = await exchange.connect(user1).cancelOrder(0);
+          receipt = await transaction.wait();
+        });
+
+        it("Should cancel an order", async () => {
+          const order = await exchange.orders(0);
+          expect(order.id).to.equal(0);
+          expect(order.user).to.equal(user1.address);
+          expect(order.tokenGet).to.equal(await token2.getAddress());
+          expect(order.amountGet).to.equal(amountGet);
+          expect(order.tokenGive).to.equal(await token1.getAddress());
+          expect(order.amountGive).to.equal(amountGive);
+          expect(order.timestamp).to.at.least(1);
+        });
+
+        it("Should emit a Cancel event", async () => {
+          const events = receipt?.logs[0] as EventLog;
+          const event = events?.fragment;
+
+          expect(event.name).to.equal("Cancel");
+
+          const args = events?.args;
+
+          expect(args.id).to.equal(0);
+          expect(args.user).to.equal(user1.address);
+          expect(args.tokenGet).to.equal(await token2.getAddress());
+          expect(args.amountGet).to.equal(amountGet);
+          expect(args.tokenGive).to.equal(await token1.getAddress());
+          expect(args.amountGive).to.equal(amountGive);
+          expect(args.timestamp).to.at.least(1);
+        });
       });
 
-      it("Should reject invalid amounts", async () => {
-        await expect(
-          exchange
-            .connect(user1)
-            .makeOrder(
-              token2.getAddress(),
-              tokens(100),
-              token1.getAddress(),
-              tokens(100)
-            )
-        ).to.be.revertedWith("Not enough tokens");
+      describe("Failure", () => {
+        it("Should reject invalid order ids", async () => {
+          await expect(
+            exchange.connect(user1).cancelOrder(1)
+          ).to.be.revertedWith("Invalid order id");
+        });
+        it("Should reject unauthorized cancelations", async () => {
+          await expect(
+            exchange.connect(user2).cancelOrder(0)
+          ).to.be.revertedWith("Unauthorized");
+        });
       });
     });
   });
