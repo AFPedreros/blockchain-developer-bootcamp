@@ -341,10 +341,111 @@ describe("Exchange", () => {
             exchange.connect(user1).cancelOrder(1)
           ).to.be.revertedWith("Invalid order id");
         });
+
         it("Should reject unauthorized cancelations", async () => {
           await expect(
             exchange.connect(user2).cancelOrder(0)
           ).to.be.revertedWith("Unauthorized");
+        });
+      });
+    });
+
+    describe("Fill orders", () => {
+      beforeEach(async () => {
+        transaction = await token2
+          .connect(deployer)
+          .transfer(user2.address, tokens(100));
+
+        transaction = await token2
+          .connect(user2)
+          .approve(exchange.getAddress(), tokens(20));
+        receipt = await transaction.wait();
+
+        transaction = await exchange
+          .connect(user2)
+          .depositToken(token2.getAddress(), tokens(20));
+        receipt = await transaction.wait();
+      });
+
+      describe("Success", () => {
+        beforeEach(async () => {
+          transaction = await exchange.connect(user2).fillOrder(0);
+          receipt = await transaction.wait();
+        });
+
+        it("Should fill an order", async () => {
+          const order = await exchange.orders(0);
+          expect(order.id).to.equal(0);
+
+          expect(
+            await exchange.balanceOf(token1.getAddress(), user1.address)
+          ).to.equal(0);
+          expect(
+            await exchange.balanceOf(token2.getAddress(), user1.address)
+          ).to.equal(amountGet);
+          expect(
+            await exchange.balanceOf(token1.getAddress(), user2.address)
+          ).to.equal(amountGive);
+          expect(
+            await exchange.balanceOf(token2.getAddress(), user2.address)
+          ).to.equal(tokens(9));
+        });
+
+        it("Should charge fees", async () => {
+          expect(
+            await exchange.balanceOf(token2.getAddress(), feeAccount.address)
+          ).to.equal(tokens(1));
+        });
+
+        it("Should emit a Trade event", async () => {
+          const events = receipt?.logs[0] as EventLog;
+          const event = events?.fragment;
+
+          expect(event.name).to.equal("Trade");
+
+          const args = events?.args;
+
+          expect(args.id).to.equal(0);
+          expect(args.user).to.equal(user1.address);
+          expect(args.tokenGet).to.equal(await token2.getAddress());
+          expect(args.amountGet).to.equal(amountGet);
+          expect(args.tokenGive).to.equal(await token1.getAddress());
+          expect(args.amountGive).to.equal(amountGive);
+          expect(args.userFill).to.equal(user2.address);
+          expect(args.timestamp).to.at.least(1);
+        });
+
+        it("Should mark orders as filled", async () => {
+          expect(await exchange.orderFilled(0)).to.equal(true);
+        });
+      });
+
+      describe("Failure", () => {
+        it("Should reject invalid order ids", async () => {
+          await expect(exchange.connect(user2).fillOrder(1)).to.be.revertedWith(
+            "Invalid order id"
+          );
+        });
+        it("Should reject already filled orders", async () => {
+          await exchange.connect(user2).fillOrder(0);
+          await expect(exchange.connect(user2).fillOrder(0)).to.be.revertedWith(
+            "Order already filled"
+          );
+        });
+        it("Should reject cancelled orders", async () => {
+          transaction = await exchange
+            .connect(user1)
+            .makeOrder(
+              token2.getAddress(),
+              amountGet,
+              token1.getAddress(),
+              amountGive
+            );
+          await transaction.wait();
+          await exchange.connect(user1).cancelOrder(1);
+          await expect(exchange.connect(user2).fillOrder(1)).to.be.revertedWith(
+            "Order already cancelled"
+          );
         });
       });
     });
