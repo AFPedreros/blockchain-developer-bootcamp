@@ -1,4 +1,7 @@
+import * as fs from "fs";
 import { ethers } from "hardhat";
+
+import config from "../../src/config.json";
 
 async function main() {
   const Token = await ethers.getContractFactory("Token");
@@ -29,6 +32,17 @@ async function main() {
   await exchange.waitForDeployment();
   const exchangeAddress = await exchange.getAddress();
   console.log(`Exchange deployed to: ${exchangeAddress}`);
+
+  config["31337"] = {
+    ...config["31337"],
+    exchange: { address: exchangeAddress },
+    CoffeeToken: { address: coffeeTokenAddress },
+    mETH: { address: mETHAddress },
+    mDAI: { address: mDAIAddress },
+  };
+
+  fs.writeFileSync("../src/config.json", JSON.stringify(config, null, 2));
+  console.log("Config file updated with new contract addresses.");
 }
 
 main().catch((error) => {
