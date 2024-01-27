@@ -9,10 +9,7 @@ import {
 import { ethers } from "hardhat";
 
 import { Exchange, Token } from "../typechain-types";
-
-const tokens = (n: number) => {
-  return ethers.parseEther(n.toString());
-};
+import { tokens } from "../utils";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 

@@ -2,21 +2,33 @@ import { ethers } from "hardhat";
 
 async function main() {
   const Token = await ethers.getContractFactory("Token");
-
-  const token = await Token.deploy();
-  await token.waitForDeployment();
-  const address = await token.getAddress();
-  console.log(`Token deployed to: ${address}`);
-
-  const name = await token.name();
-
-  console.log(`Token name: ${name}`);
+  const Exchange = await ethers.getContractFactory("Exchange");
 
   const accounts = await ethers.getSigners();
-  const account = accounts[0];
-  const balance = await ethers.provider.getBalance(account.address);
-  const balanceInEth = ethers.formatEther(balance);
-  console.log(`Account balance: ${balanceInEth}`);
+
+  console.log(
+    `Accounts fetched:\n${accounts[0].address}\n${accounts[1].address}\n`
+  );
+
+  const coffeeToken = await Token.deploy("CoffeeToken", "COF", 100000000);
+  await coffeeToken.waitForDeployment();
+  const coffeeTokenAddress = await coffeeToken.getAddress();
+  console.log(`Coffee token deployed to: ${coffeeTokenAddress}`);
+
+  const mETH = await Token.deploy("MockETH", "mETH", 100000000);
+  await mETH.waitForDeployment();
+  const mETHAddress = await mETH.getAddress();
+  console.log(`mETH token deployed to: ${mETHAddress}`);
+
+  const mDAI = await Token.deploy("MockDAI", "mDAI", 100000000);
+  await mDAI.waitForDeployment();
+  const mDAIAddress = await mDAI.getAddress();
+  console.log(`mDAI token deployed to: ${mDAIAddress}`);
+
+  const exchange = await Exchange.deploy(accounts[1].address, 10);
+  await exchange.waitForDeployment();
+  const exchangeAddress = await exchange.getAddress();
+  console.log(`Exchange deployed to: ${exchangeAddress}`);
 }
 
 main().catch((error) => {
