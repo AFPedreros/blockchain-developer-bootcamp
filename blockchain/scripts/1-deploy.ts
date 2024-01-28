@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { ethers } from "hardhat";
 
-import config from "../../src/config.json";
+import config from "../../src/lib/config.json";
 
 async function main() {
   const Token = await ethers.getContractFactory("Token");

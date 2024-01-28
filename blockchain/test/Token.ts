@@ -9,9 +9,7 @@ import {
 import { ethers } from "hardhat";
 
 import { Token } from "../typechain-types";
-import { tokens } from "../utils";
-
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+import { tokens, ZERO_ADDRESS } from "../utils";
 
 describe("Token", () => {
   let token: Token;

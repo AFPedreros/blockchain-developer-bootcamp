@@ -1,7 +1,7 @@
 import { EventLog } from "ethers";
 import { ethers } from "hardhat";
 
-import config from "../../src/config.json";
+import config from "../../src/lib/config.json";
 import { tokens, wait } from "../utils";
 
 async function main() {
