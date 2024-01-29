@@ -87,10 +87,10 @@ describe("Exchange", () => {
       it("Should deposit tokens", async () => {
         expect(await token1.balanceOf(exchange.getAddress())).to.equal(amount);
         expect(
-          await exchange.tokens(token1.getAddress(), user1.address)
+          await exchange.tokens(token1.getAddress(), user1.address),
         ).to.equal(amount);
         expect(
-          await exchange.balanceOf(token1.getAddress(), user1.address)
+          await exchange.balanceOf(token1.getAddress(), user1.address),
         ).to.equal(amount);
       });
 
@@ -112,7 +112,7 @@ describe("Exchange", () => {
     describe("Failure", () => {
       it("Should reject deposits when tokens are not approved", async () => {
         await expect(
-          exchange.connect(user2).depositToken(token1.getAddress(), amount)
+          exchange.connect(user2).depositToken(token1.getAddress(), amount),
         ).to.be.revertedWith("Not enough allowance");
       });
     });
@@ -146,10 +146,10 @@ describe("Exchange", () => {
       it("Should withdraw tokens", async () => {
         expect(await token1.balanceOf(exchange.getAddress())).to.equal(0);
         expect(
-          await exchange.tokens(token1.getAddress(), user1.address)
+          await exchange.tokens(token1.getAddress(), user1.address),
         ).to.equal(0);
         expect(
-          await exchange.balanceOf(token1.getAddress(), user1.address)
+          await exchange.balanceOf(token1.getAddress(), user1.address),
         ).to.equal(0);
       });
 
@@ -171,7 +171,7 @@ describe("Exchange", () => {
     describe("Failure", () => {
       it("Should fail when user doesn't have enough tokens", async () => {
         await expect(
-          exchange.connect(user1).withdrawToken(token1.getAddress(), amount)
+          exchange.connect(user1).withdrawToken(token1.getAddress(), amount),
         ).to.be.revertedWith("Not enough tokens");
       });
     });
@@ -198,7 +198,7 @@ describe("Exchange", () => {
 
     it("Should return user balance", async () => {
       expect(
-        await exchange.balanceOf(token1.getAddress(), user1.address)
+        await exchange.balanceOf(token1.getAddress(), user1.address),
       ).to.equal(amount);
     });
   });
@@ -228,7 +228,7 @@ describe("Exchange", () => {
           token2.getAddress(),
           amountGet,
           token1.getAddress(),
-          amountGive
+          amountGive,
         );
       receipt = await transaction.wait();
     });
@@ -274,8 +274,8 @@ describe("Exchange", () => {
                 ZERO_ADDRESS,
                 amountGet,
                 token1.getAddress(),
-                amountGive
-              )
+                amountGive,
+              ),
           ).to.be.revertedWith("TokenGet cannot be 0x0");
         });
 
@@ -287,8 +287,8 @@ describe("Exchange", () => {
                 token2.getAddress(),
                 tokens(100),
                 token1.getAddress(),
-                tokens(100)
-              )
+                tokens(100),
+              ),
           ).to.be.revertedWith("Not enough tokens");
         });
       });
@@ -333,13 +333,13 @@ describe("Exchange", () => {
       describe("Failure", () => {
         it("Should reject invalid order ids", async () => {
           await expect(
-            exchange.connect(user1).cancelOrder(1)
+            exchange.connect(user1).cancelOrder(1),
           ).to.be.revertedWith("Invalid order id");
         });
 
         it("Should reject unauthorized cancelations", async () => {
           await expect(
-            exchange.connect(user2).cancelOrder(0)
+            exchange.connect(user2).cancelOrder(0),
           ).to.be.revertedWith("Unauthorized");
         });
       });
@@ -373,22 +373,22 @@ describe("Exchange", () => {
           expect(order.id).to.equal(0);
 
           expect(
-            await exchange.balanceOf(token1.getAddress(), user1.address)
+            await exchange.balanceOf(token1.getAddress(), user1.address),
           ).to.equal(0);
           expect(
-            await exchange.balanceOf(token2.getAddress(), user1.address)
+            await exchange.balanceOf(token2.getAddress(), user1.address),
           ).to.equal(amountGet);
           expect(
-            await exchange.balanceOf(token1.getAddress(), user2.address)
+            await exchange.balanceOf(token1.getAddress(), user2.address),
           ).to.equal(amountGive);
           expect(
-            await exchange.balanceOf(token2.getAddress(), user2.address)
+            await exchange.balanceOf(token2.getAddress(), user2.address),
           ).to.equal(tokens(9));
         });
 
         it("Should charge fees", async () => {
           expect(
-            await exchange.balanceOf(token2.getAddress(), feeAccount.address)
+            await exchange.balanceOf(token2.getAddress(), feeAccount.address),
           ).to.equal(tokens(1));
         });
 
@@ -418,13 +418,13 @@ describe("Exchange", () => {
       describe("Failure", () => {
         it("Should reject invalid order ids", async () => {
           await expect(exchange.connect(user2).fillOrder(1)).to.be.revertedWith(
-            "Invalid order id"
+            "Invalid order id",
           );
         });
         it("Should reject already filled orders", async () => {
           await exchange.connect(user2).fillOrder(0);
           await expect(exchange.connect(user2).fillOrder(0)).to.be.revertedWith(
-            "Order already filled"
+            "Order already filled",
           );
         });
         it("Should reject cancelled orders", async () => {
@@ -434,12 +434,12 @@ describe("Exchange", () => {
               token2.getAddress(),
               amountGet,
               token1.getAddress(),
-              amountGive
+              amountGive,
             );
           await transaction.wait();
           await exchange.connect(user1).cancelOrder(1);
           await expect(exchange.connect(user2).fillOrder(1)).to.be.revertedWith(
-            "Order already cancelled"
+            "Order already cancelled",
           );
         });
       });

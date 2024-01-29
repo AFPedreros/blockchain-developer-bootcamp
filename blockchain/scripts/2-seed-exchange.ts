@@ -12,21 +12,21 @@ async function main() {
   // Get tokens
   const CoffeeToken = await ethers.getContractAt(
     "Token",
-    config[chainId.toString() as keyof typeof config].CoffeeToken.address
+    config[chainId.toString() as keyof typeof config].CoffeeToken.address,
   );
   const coffeeTokenAddress = await CoffeeToken.getAddress();
   console.log(`CoffeeToken fetched: ${coffeeTokenAddress}`);
 
   const mETH = await ethers.getContractAt(
     "Token",
-    config[chainId.toString() as keyof typeof config].mETH.address
+    config[chainId.toString() as keyof typeof config].mETH.address,
   );
   const mETHAddress = await mETH.getAddress();
   console.log(`mETH fetched: ${mETHAddress}`);
 
   const mDAI = await ethers.getContractAt(
     "Token",
-    config[chainId.toString() as keyof typeof config].mDAI.address
+    config[chainId.toString() as keyof typeof config].mDAI.address,
   );
   const mDAIAddress = await mDAI.getAddress();
   console.log(`mDAI fetched: ${mDAIAddress}`);
@@ -34,7 +34,7 @@ async function main() {
   // Get exchange
   const Exchange = await ethers.getContractAt(
     "Exchange",
-    config[chainId.toString() as keyof typeof config].exchange.address
+    config[chainId.toString() as keyof typeof config].exchange.address,
   );
   const exchangeAddress = await Exchange.getAddress();
   console.log(`Exchange fetched: ${exchangeAddress}`);
@@ -49,7 +49,7 @@ async function main() {
     .transfer(receiver.address, amount);
   let receipt = await transaction.wait();
   console.log(
-    `Transferred ${amount} mETH from ${sender.address} to ${receiver.address}\n`
+    `Transferred ${amount} mETH from ${sender.address} to ${receiver.address}\n`,
   );
 
   // Set up exchange users
@@ -60,21 +60,21 @@ async function main() {
   // User 1 approves exchange to spend Coffee tokens
   transaction = await CoffeeToken.connect(user1).approve(
     exchangeAddress,
-    amount
+    amount,
   );
   receipt = await transaction.wait();
   console.log(
-    `Approved ${amount} CoffeeToken from ${user1.address} for exchange\n`
+    `Approved ${amount} CoffeeToken from ${user1.address} for exchange\n`,
   );
 
   // User 1 deposits tokens into exchange
   transaction = await Exchange.connect(user1).depositToken(
     coffeeTokenAddress,
-    amount
+    amount,
   );
   receipt = await transaction.wait();
   console.log(
-    `Deposited ${amount} CoffeeToken into exchange from ${user1.address}\n`
+    `Deposited ${amount} CoffeeToken into exchange from ${user1.address}\n`,
   );
 
   // User 2 approves exchange to spend mETH
@@ -93,7 +93,7 @@ async function main() {
     mETHAddress,
     tokens(100),
     coffeeTokenAddress,
-    tokens(5)
+    tokens(5),
   );
   receipt = await transaction.wait();
   console.log(`Made order from ${user1.address}\n`);
@@ -110,7 +110,7 @@ async function main() {
     mETHAddress,
     tokens(100),
     coffeeTokenAddress,
-    tokens(10)
+    tokens(10),
   );
   receipt = await transaction.wait();
   console.log(`Made order from ${user1.address}\n`);
@@ -126,7 +126,7 @@ async function main() {
     mETHAddress,
     tokens(50),
     coffeeTokenAddress,
-    tokens(15)
+    tokens(15),
   );
   receipt = await transaction.wait();
   console.log(`Made order from ${user1.address}\n`);
@@ -144,7 +144,7 @@ async function main() {
       mETHAddress,
       tokens(10 * i),
       coffeeTokenAddress,
-      tokens(10)
+      tokens(10),
     );
     receipt = await transaction.wait();
     console.log(`Made order from ${user1.address}`);
@@ -157,7 +157,7 @@ async function main() {
       coffeeTokenAddress,
       tokens(10),
       mETHAddress,
-      tokens(10 * i)
+      tokens(10 * i),
     );
     receipt = await transaction.wait();
     console.log(`Made order from ${user2.address}`);

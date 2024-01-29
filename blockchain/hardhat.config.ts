@@ -4,9 +4,9 @@ import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.9",
-  networks:{
-   localhost:{}, 
-  }
+  networks: {
+    localhost: {},
+  },
 };
 
 export default config;

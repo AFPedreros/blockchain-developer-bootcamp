@@ -14,7 +14,7 @@ export default function DashboardLayout({
         <p>Hola</p>
       </aside>
       <main className="flex h-full flex-1 flex-col md:pl-72">
-        <Header/>
+        <Header />
 
         <div className="flex-grow ">{children}</div>
 

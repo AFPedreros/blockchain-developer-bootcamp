@@ -73,7 +73,7 @@ describe("Token", () => {
 
       it("Should transfer tokens between accounts", async () => {
         expect(await token.balanceOf(deployer.address)).to.equal(
-          tokens(999900)
+          tokens(999900),
         );
         expect(await token.balanceOf(receiver.address)).to.equal(amount);
       });
@@ -96,13 +96,13 @@ describe("Token", () => {
       it("Should reject insufficient balances", async () => {
         const invalidAmount = tokens(100000000);
         await expect(
-          token.connect(deployer).transfer(receiver.address, invalidAmount)
+          token.connect(deployer).transfer(receiver.address, invalidAmount),
         ).to.be.revertedWith("Not enough tokens");
       });
 
       it("Should reject invalid recipients", async () => {
         await expect(
-          token.connect(deployer).transfer(ZERO_ADDRESS, amount)
+          token.connect(deployer).transfer(ZERO_ADDRESS, amount),
         ).to.be.revertedWith("Invalid recipient");
       });
     });
@@ -124,7 +124,7 @@ describe("Token", () => {
     describe("Success", () => {
       it("Should approve token for delegated transfer", async () => {
         expect(
-          await token.allowance(deployer.address, exchange.address)
+          await token.allowance(deployer.address, exchange.address),
         ).to.equal(amount);
       });
 
@@ -145,7 +145,7 @@ describe("Token", () => {
     describe("Failure", () => {
       it("Should reject invalid spender", async () => {
         await expect(
-          token.connect(deployer).approve(ZERO_ADDRESS, amount)
+          token.connect(deployer).approve(ZERO_ADDRESS, amount),
         ).to.be.revertedWith("Invalid spender");
       });
     });
@@ -174,14 +174,14 @@ describe("Token", () => {
 
       it("Should transfer tokens between accounts", async () => {
         expect(await token.balanceOf(deployer.address)).to.equal(
-          tokens(999900)
+          tokens(999900),
         );
         expect(await token.balanceOf(receiver.address)).to.equal(amount);
       });
 
       it("Should reset allowance", async () => {
         expect(
-          await token.allowance(deployer.address, exchange.address)
+          await token.allowance(deployer.address, exchange.address),
         ).to.equal(0);
       });
 
@@ -205,7 +205,7 @@ describe("Token", () => {
         await expect(
           token
             .connect(exchange)
-            .transferFrom(deployer.address, receiver.address, invalidAmount)
+            .transferFrom(deployer.address, receiver.address, invalidAmount),
         ).to.be.revertedWith("Not enough tokens");
       });
 
@@ -214,7 +214,7 @@ describe("Token", () => {
         await expect(
           token
             .connect(exchange)
-            .transferFrom(deployer.address, receiver.address, invalidAmount)
+            .transferFrom(deployer.address, receiver.address, invalidAmount),
         ).to.be.revertedWith("Not enough allowance");
       });
     });

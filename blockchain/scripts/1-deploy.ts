@@ -10,7 +10,7 @@ async function main() {
   const accounts = await ethers.getSigners();
 
   console.log(
-    `Accounts fetched:\n${accounts[0].address}\n${accounts[1].address}\n`
+    `Accounts fetched:\n${accounts[0].address}\n${accounts[1].address}\n`,
   );
 
   const coffeeToken = await Token.deploy("CoffeeToken", "COF", 100000000);
