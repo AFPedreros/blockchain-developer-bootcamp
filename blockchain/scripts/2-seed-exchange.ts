@@ -88,7 +88,7 @@ async function main() {
   console.log(`Deposited ${amount} mETH into exchange from ${user2.address}\n`);
 
   // Seed a cancel order
-  let orderId;
+
   transaction = await Exchange.connect(user1).makeOrder(
     mETHAddress,
     tokens(100),
@@ -98,7 +98,7 @@ async function main() {
   receipt = await transaction.wait();
   console.log(`Made order from ${user1.address}\n`);
 
-  orderId = (receipt?.logs[0] as EventLog).args?.id;
+  let orderId = (receipt?.logs[0] as EventLog).args?.id;
   transaction = await Exchange.connect(user1).cancelOrder(orderId);
   receipt = await transaction.wait();
   console.log(`Cancelled order from ${user1.address}\n`);

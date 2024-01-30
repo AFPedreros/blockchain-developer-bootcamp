@@ -14,16 +14,23 @@ export default function Header() {
       const accounts = await (window as any).ethereum.request({
         method: "eth_requestAccounts",
       });
-      console.log(accounts[0]);
+      console.log("[ADDRESS]", accounts[0]);
 
       const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const { chainId } = await provider.getNetwork();
       const signer = await provider.getSigner();
 
-      const token = new Contract(TOKEN_ADDRESS, TOKEN_ABI, provider);
+      const coffeeToken = new ethers.Contract(
+        config[chainId.toString() as keyof typeof config].mDAI.address,
+        TOKEN_ABI,
+        provider,
+      );
 
-      const tokenAddress = await token.getAddress();
-      const symbol = await token.name();
-      console.log("[TOKEN]", tokenAddress, symbol);
+      const tokenAddress = await coffeeToken.getAddress();
+      console.log("[TOKEN]", tokenAddress);
+
+      const symbol = await coffeeToken.symbol();
+      console.log("Symbol:", symbol);
     } catch (error) {
       console.error("Error in blockchain data loading", error);
     }

@@ -255,6 +255,8 @@ describe("Exchange", () => {
 
           const args = events?.args;
 
+          console.log("ARGS", args)
+
           expect(args.id).to.equal(0);
           expect(args.user).to.equal(user1.address);
           expect(args.tokenGet).to.equal(await token2.getAddress());
