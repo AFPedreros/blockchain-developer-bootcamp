@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { Contract, ethers } from "ethers";
 import config from "@/lib/config.json";
+import { ethers } from "ethers";
+import { useEffect } from "react";
 import Token from "~/artifacts/contracts/Token.sol/Token.json";
 
 const TOKEN_ABI = Token.abi;
@@ -14,23 +14,20 @@ export default function Header() {
       const accounts = await (window as any).ethereum.request({
         method: "eth_requestAccounts",
       });
-      console.log("[ADDRESS]", accounts[0]);
 
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const { chainId } = await provider.getNetwork();
       const signer = await provider.getSigner();
 
       const coffeeToken = new ethers.Contract(
-        config[chainId.toString() as keyof typeof config].mDAI.address,
+        TOKEN_ADDRESS,
         TOKEN_ABI,
         provider,
       );
 
       const tokenAddress = await coffeeToken.getAddress();
-      console.log("[TOKEN]", tokenAddress);
-
       const symbol = await coffeeToken.symbol();
-      console.log("Symbol:", symbol);
+      console.log("[TOKEN]", tokenAddress, symbol);
     } catch (error) {
       console.error("Error in blockchain data loading", error);
     }
